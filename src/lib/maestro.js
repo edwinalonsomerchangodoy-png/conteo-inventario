@@ -54,6 +54,7 @@ export function extraerStockDeTienda(maestro, nombreTienda) {
     codigo: limpiarCodigo(r[maestro.idxCodigo]),
     producto: maestro.idxDescripcion !== -1 ? r[maestro.idxDescripcion] ?? '' : '',
     area: maestro.idxMundo !== -1 ? r[maestro.idxMundo] ?? '' : '',
+    tienda: nombreTienda,
     stock_sistema: Number(r[tienda.col]) || 0,
   }))
 }

@@ -68,7 +68,11 @@ export function upsertStockRow(stock, row) {
 }
 
 export function buscarPorCodigo(stock, codigo) {
-  return stock.find((r) => String(r.codigo) === String(codigo))
+  const directo = stock.find((r) => String(r.codigo) === String(codigo))
+  if (directo) return directo
+  return stock.find(
+    (r) => Array.isArray(r.alt_codigos) && r.alt_codigos.some((c) => String(c) === String(codigo))
+  )
 }
 
 export function fechaHoy() {

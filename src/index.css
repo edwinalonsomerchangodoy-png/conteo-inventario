@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #F6F5F1;
+  color: #14181F;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: #FFB020;
+  color: #14181F;
+}
+
+/* Focus ring, kept visible for accessibility */
+:focus-visible {
+  outline: 2px solid #FFB020;
+  outline-offset: 2px;
+}
+
+/* Scanner input signature element */
+.scan-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.scan-frame::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #FFB020, transparent);
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scan-frame.is-active::before {
+  opacity: 1;
+  animation: scanline 1.6s ease-in-out infinite;
+}
+
+@keyframes scanline {
+  0% {
+    top: 6%;
+  }
+  50% {
+    top: 90%;
+  }
+  100% {
+    top: 6%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-frame.is-active::before {
+    animation: none;
+    opacity: 0.6;
+    top: 50%;
+  }
+}
+
+/* Code ticket, monospace tag for product codes */
+.code-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.03em;
+}
+
+/* Thin dividers used as structural devices */
+.hairline {
+  border-color: #2A313C1a;
+}
+
+table.data-table th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+table.data-table tbody tr {
+  border-top: 1px solid #14181F0f;
+}

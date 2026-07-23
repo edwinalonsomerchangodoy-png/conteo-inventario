@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CheckCircle2, AlertTriangle, XCircle, PlusCircle, RotateCcw, ShieldAlert } from 'lucide-react'
 import { Card, Eyebrow, Field, inputClass, Badge } from '../components/ui.jsx'
 import { limpiarCodigo, buscarPorCodigo } from '../lib/storage.js'
@@ -10,6 +10,7 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
   const [focused, setFocused] = useState(false)
   const [resultado, setResultado] = useState(null)
   const [guardando, setGuardando] = useState(false)
+  const inputCodigoRef = useRef(null)
 
   const codigoLimpio = limpiarCodigo(codigo)
   const producto = codigoLimpio ? buscarPorCodigo(stock, codigoLimpio) : null
@@ -50,6 +51,8 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
       estado: 'ok',
     }
     await upsertConteo(intento)
+    setCodigo('')
+    inputCodigoRef.current?.focus()
     onConteoGuardado()
   }
 
@@ -130,6 +133,7 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
       await upsertConteo(fila)
       setResultado(mensaje)
       setCodigo('')
+      inputCodigoRef.current?.focus()
       onConteoGuardado()
     } catch (err) {
       console.error(err)
@@ -168,11 +172,22 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
         <Field label="Escanea el código del producto">
           <div className={`scan-frame ${focused ? 'is-active' : ''}`}>
             <input
+              ref={inputCodigoRef}
               className={`${inputClass} code-tag text-base`}
               value={codigo}
               onChange={(e) => {
                 setCodigo(e.target.value)
                 setResultado(null)
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter') return
+                e.preventDefault()
+                if (!codigoLimpio) return
+                if (producto && modo !== 'cerrado') {
+                  guardarConteo()
+                } else if (!producto) {
+                  registrarNoEncontrado()
+                }
               }}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
@@ -238,6 +253,12 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
                     className={`${inputClass} bg-white`}
                     value={cantidadEscaneo}
                     onChange={(e) => setCantidadEscaneo(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        guardarConteo()
+                      }
+                    }}
                   />
                 </Field>
                 <button

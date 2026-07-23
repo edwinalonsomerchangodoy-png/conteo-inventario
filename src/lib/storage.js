@@ -62,6 +62,29 @@ export function setTiendaActiva(nombre) {
   }
 }
 
+const LISTA_ACTIVA_KEY = 'inventario_lista_activa_v1'
+
+export function getListaActivaId() {
+  try {
+    const raw = localStorage.getItem(LISTA_ACTIVA_KEY)
+    return raw ? Number(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export function setListaActivaId(id) {
+  try {
+    if (id === null || id === undefined) {
+      localStorage.removeItem(LISTA_ACTIVA_KEY)
+    } else {
+      localStorage.setItem(LISTA_ACTIVA_KEY, String(id))
+    }
+  } catch {
+    /* noop */
+  }
+}
+
 export function upsertStockRow(stock, row) {
   const sinDuplicado = stock.filter((r) => r.codigo !== row.codigo)
   return [...sinDuplicado, row]
@@ -110,4 +133,18 @@ export function descargarCSV(filename, rows, columns) {
   URL.revokeObjectURL(url)
 }
 
+export async function descargarExcel(filename, rows, columns, nombreHoja = 'Datos') {
+  const XLSX = await import('xlsx')
+  const data = rows.map((r) => {
+    const obj = {}
+    columns.forEach((c) => {
+      obj[c] = r[c] ?? ''
+    })
+    return obj
+  })
+  const hoja = XLSX.utils.json_to_sheet(data, { header: columns })
+  const libro = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(libro, hoja, nombreHoja)
+  XLSX.writeFile(libro, filename)
+}
 export const AREAS = ['Farmacia', 'Cajas', 'Pasillos', 'Equipos médicos']

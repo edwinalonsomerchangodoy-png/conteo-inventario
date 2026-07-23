@@ -33,22 +33,45 @@ datos compartida entre todas las tiendas, publicable en Netlify.
    - **anon public** (la llave pública — no es secreta, está diseñada para
      usarse en el navegador)
 
-## Paso 2 — Crear las cuentas de los colaboradores
+## Paso 2 — Crear el primer administrador
+
+Antes de poder crear colaboradores desde la app, necesitas **un primer
+administrador** creado manualmente en Supabase (esto solo se hace una vez).
 
 1. En Supabase, ve a **Authentication** → **Users** → **Add user** →
    **Create new user**.
-2. Escribe el correo y una contraseña para esa persona. Marca "Auto Confirm
-   User" para que no necesite confirmar por correo.
-3. Antes de guardar (o editando el usuario después), agrega en **User
-   Metadata** (formato JSON):
+2. Escribe el correo y una contraseña. Marca "Auto Confirm User".
+3. En **User Metadata**, escribe:
    ```json
-   { "full_name": "María Torres" }
+   { "full_name": "Tu Nombre", "role": "admin" }
    ```
-   Ese nombre es el que va a aparecer automáticamente en cada conteo que
-   haga esa persona.
-4. Repite por cada colaborador que necesite acceso.
+   El campo `"role": "admin"` es lo que le da permiso de crear otros
+   colaboradores desde dentro de la app.
+4. Guarda.
 
-## Paso 3 — Configurar la app con tus datos de Supabase
+Desde ese momento, ese administrador puede entrar a la app → sección
+**"Colaboradores"** (solo visible para administradores) → crear cuentas
+nuevas para el resto del equipo, sin volver a tocar Supabase. Ahí también
+puede marcar a otras personas como administradoras si lo necesitas.
+
+## Paso 3 — Variable adicional para poder crear usuarios desde la app
+
+Esta función necesita una llave especial de Supabase que **nunca debe
+quedar visible en el navegador** — por eso se configura aparte de las otras
+dos.
+
+1. En Supabase → **Project Settings** → **API**, busca la sección
+   **"service_role"** (marcada como secreta) y cópiala.
+2. En Netlify → **Site configuration → Environment variables**, agrega:
+   - `SUPABASE_SERVICE_ROLE_KEY` = esa llave `service_role`
+   > A diferencia de `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`, esta
+   > variable **no lleva el prefijo `VITE_`** a propósito: así Vite nunca la
+   > incluye en el código que se descarga al navegador. Solo la usan las
+   > funciones de servidor (`netlify/functions`).
+3. Vuelve a desplegar (Trigger deploy) para que la función la tome en
+   cuenta.
+
+## Paso 4 — Configurar la app con tus datos de Supabase (URL y llave pública)
 
 **Para probarlo en tu computador:**
 
@@ -100,6 +123,10 @@ datos compartida entre todas las tiendas, publicable en Netlify.
 ```
 supabase-setup.sql        # Script SQL para crear las tablas (correr una vez)
 .env.example               # Plantilla de variables de entorno
+netlify/
+  functions/
+    crear-usuario.js          # crea colaboradores (usa la llave service_role)
+    listar-usuarios.js         # lista colaboradores existentes
 src/
   App.jsx                   # sesión, layout y navegación
   components/
@@ -116,6 +143,7 @@ src/
     ExcelUpload.jsx                    # carga masiva desde Excel
     PhysicalCount.jsx                   # conteo físico con reconteo
     Reports.jsx                          # reporte de diferencias
+    Colaboradores.jsx                     # crear/ver colaboradores (solo admins)
 ```
 
 ## Preguntas frecuentes
@@ -128,5 +156,6 @@ muy por encima de lo que un inventario de unas cuantas tiendas necesita.
 restablecerla desde Supabase → Authentication → Users, sin necesitar
 correo de recuperación configurado.
 
-**¿Puedo agregar más colaboradores después?** Sí, repite el Paso 2 cuando
-quieras — no requiere volver a desplegar la app.
+**¿Puedo agregar más colaboradores después?** Sí, cualquier administrador
+puede hacerlo en cualquier momento desde la sección "Colaboradores" dentro
+de la app — no requiere volver a desplegar ni entrar a Supabase.

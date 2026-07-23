@@ -5,9 +5,18 @@ import Sidebar from './components/Sidebar.jsx'
 import AdminStock from './pages/AdminStock.jsx'
 import ExcelUpload from './pages/ExcelUpload.jsx'
 import PhysicalCount from './pages/PhysicalCount.jsx'
+import Pendientes from './pages/Pendientes.jsx'
+import ConteosSelectivos from './pages/ConteosSelectivos.jsx'
+import Dashboard from './pages/Dashboard.jsx'
 import Reports from './pages/Reports.jsx'
-import { getTiendaActiva, setTiendaActiva as persistTiendaActiva } from './lib/storage.js'
-import { getStockPorTienda, getConteos as getConteosDb } from './lib/db.js'
+import Colaboradores from './pages/Colaboradores.jsx'
+import {
+  getTiendaActiva,
+  setTiendaActiva as persistTiendaActiva,
+  getListaActivaId,
+  setListaActivaId as persistListaActivaId,
+} from './lib/storage.js'
+import { getStockPorTienda, getConteos as getConteosDb, getListasConteo } from './lib/db.js'
 
 export default function App() {
   // undefined = todavía verificando si hay sesión guardada; null = sin sesión
@@ -17,6 +26,8 @@ export default function App() {
   const [conteos, setConteosState] = useState([])
   const [tiendaActiva, setTiendaActivaState] = useState('')
   const [cargandoStock, setCargandoStock] = useState(false)
+  const [listasDisponibles, setListasDisponibles] = useState([])
+  const [listaActivaId, setListaActivaIdState] = useState(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
@@ -26,6 +37,7 @@ export default function App() {
 
   useEffect(() => {
     setTiendaActivaState(getTiendaActiva())
+    setListaActivaIdState(getListaActivaId())
   }, [])
 
   const cargarStock = useCallback(async (tienda) => {
@@ -53,6 +65,19 @@ export default function App() {
     }
   }, [])
 
+  const cargarListas = useCallback(async (tienda) => {
+    if (!tienda) {
+      setListasDisponibles([])
+      return
+    }
+    try {
+      const filas = await getListasConteo(tienda)
+      setListasDisponibles(filas)
+    } catch (err) {
+      console.error('Error cargando listas de conteo', err)
+    }
+  }, [])
+
   useEffect(() => {
     if (session) cargarStock(tiendaActiva)
   }, [session, tiendaActiva, cargarStock])
@@ -61,9 +86,22 @@ export default function App() {
     if (session) cargarConteos()
   }, [session, cargarConteos])
 
+  useEffect(() => {
+    if (session) cargarListas(tiendaActiva)
+  }, [session, tiendaActiva, cargarListas])
+
   const setTiendaActiva = (nombre) => {
     setTiendaActivaState(nombre)
     persistTiendaActiva(nombre)
+    // Una lista selectiva pertenece a una tienda específica; al cambiar de
+    // tienda, se limpia para evitar mezclar referencias de otra tienda.
+    setListaActivaIdState(null)
+    persistListaActivaId(null)
+  }
+
+  const setListaActiva = (id) => {
+    setListaActivaIdState(id)
+    persistListaActivaId(id)
   }
 
   if (session === undefined) {
@@ -79,6 +117,11 @@ export default function App() {
   }
 
   const usuario = session.user.user_metadata?.full_name || session.user.email
+  const esAdmin = session.user.user_metadata?.role === 'admin'
+  const listaActiva = listasDisponibles.find((l) => l.id === listaActivaId) || null
+  const pendientesCount = conteos.filter(
+    (c) => c.estado === 'pendiente_reconteo' && (c.tienda || '') === (tiendaActiva || '')
+  ).length
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-paper">
@@ -87,6 +130,8 @@ export default function App() {
         onCambiar={setPagina}
         tiendaActiva={tiendaActiva}
         usuario={usuario}
+        esAdmin={esAdmin}
+        pendientesCount={pendientesCount}
         onSalir={() => supabase.auth.signOut()}
       />
       <main className="flex-1 px-5 py-8 md:px-10 md:py-10 max-w-5xl">
@@ -111,10 +156,34 @@ export default function App() {
             conteos={conteos}
             tiendaActiva={tiendaActiva}
             usuario={usuario}
+            listaActiva={listaActiva}
             onConteoGuardado={cargarConteos}
           />
         )}
+        {pagina === 'pendientes' && (
+          <Pendientes
+            conteos={conteos}
+            tiendaActiva={tiendaActiva}
+            usuario={usuario}
+            onConteoGuardado={cargarConteos}
+          />
+        )}
+        {pagina === 'selectivos' && (
+          <ConteosSelectivos
+            stock={stock}
+            tiendaActiva={tiendaActiva}
+            usuario={usuario}
+            listaActivaId={listaActivaId}
+            onCambiarLista={setListaActiva}
+          />
+        )}
+        {pagina === 'dashboard' && (
+          <Dashboard stock={stock} conteos={conteos} tiendaActiva={tiendaActiva} listaActiva={listaActiva} />
+        )}
         {pagina === 'reporte' && <Reports conteos={conteos} onRecargar={cargarConteos} />}
+        {pagina === 'colaboradores' && esAdmin && (
+          <Colaboradores accessToken={session.access_token} />
+        )}
       </main>
     </div>
   )

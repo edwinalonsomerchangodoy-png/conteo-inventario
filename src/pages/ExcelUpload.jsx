@@ -54,7 +54,7 @@ export default function ExcelUpload({ tiendaActiva, onCambiarTienda, onCargado }
     await subirLote(normalizado, [tiendaSeleccion])
   }
 
-const subirLote = async (filas, nombresTienda) => {
+  const subirLote = async (filas, nombresTienda) => {
     setEstado('subiendo')
     setDetalle('Subiendo a la base de datos compartida...')
     setProgreso({ actual: 0, total: filas.length })

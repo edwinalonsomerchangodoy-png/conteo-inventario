@@ -11,6 +11,9 @@ import { limpiarCodigo } from './storage.js'
 // Ean Alterno 1, Material). Se elige uno como código principal y el resto
 // se guardan como códigos alternativos, para que escanear cualquiera de
 // ellos encuentre el mismo producto.
+//
+// También se capturan "proveedor" y "linea" (categoría), usados en el
+// dashboard para desglosar el avance del conteo.
 
 export function esFormatoMaestro(filaEncabezado2) {
   return filaEncabezado2.some(
@@ -36,7 +39,9 @@ export function parseMaestro(filas) {
   const idxEanAlterno = buscarColumna(encabezado2, [/ean\s*alterno/i])
   const idxMaterial = buscarColumna(encabezado2, [/^material$/i])
   const idxDescripcion = buscarColumna(encabezado2, [/descripcion/i])
+  const idxProveedor = buscarColumna(encabezado2, [/proveedor/i])
   const idxMundo = buscarColumna(encabezado2, [/^mundo$/i])
+  const idxLinea = buscarColumna(encabezado2, [/^linea$/i])
 
   const tiendas = []
   for (let c = 0; c < encabezado2.length; c++) {
@@ -53,7 +58,17 @@ export function parseMaestro(filas) {
     .slice(2)
     .filter((r) => r && idxsCodigo.some((idx) => r[idx] !== null && r[idx] !== undefined && r[idx] !== ''))
 
-  return { dataRows, idxEan, idxEanAlterno, idxMaterial, idxDescripcion, idxMundo, tiendas }
+  return {
+    dataRows,
+    idxEan,
+    idxEanAlterno,
+    idxMaterial,
+    idxDescripcion,
+    idxProveedor,
+    idxMundo,
+    idxLinea,
+    tiendas,
+  }
 }
 
 export function extraerStockDeTienda(maestro, nombreTienda) {
@@ -77,6 +92,8 @@ export function extraerStockDeTienda(maestro, nombreTienda) {
         alt_codigos: altCodigos,
         producto: maestro.idxDescripcion !== -1 ? r[maestro.idxDescripcion] ?? '' : '',
         area: maestro.idxMundo !== -1 ? r[maestro.idxMundo] ?? '' : '',
+        categoria: maestro.idxLinea !== -1 ? r[maestro.idxLinea] ?? '' : '',
+        proveedor: maestro.idxProveedor !== -1 ? r[maestro.idxProveedor] ?? '' : '',
         tienda: nombreTienda,
         stock_sistema: Number(r[tienda.col]) || 0,
       }

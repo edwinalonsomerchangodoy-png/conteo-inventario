@@ -1,13 +1,30 @@
-import { ShieldCheck, FileSpreadsheet, ScanLine, BarChart3, Package, LogOut } from 'lucide-react'
+import {
+  ShieldCheck,
+  FileSpreadsheet,
+  ScanLine,
+  BarChart3,
+  Package,
+  LogOut,
+  Users,
+  ShieldAlert,
+  ListFilter,
+  LayoutDashboard,
+} from 'lucide-react'
 
 const ITEMS = [
   { id: 'admin', label: 'Carga de stock', sub: 'Admin', icon: ShieldCheck },
   { id: 'excel', label: 'Carga desde Excel', sub: 'Inicial', icon: FileSpreadsheet },
+  { id: 'selectivos', label: 'Conteos selectivos', sub: 'Admin', icon: ListFilter },
   { id: 'conteo', label: 'Conteo físico', sub: 'Operación', icon: ScanLine },
+  { id: 'pendientes', label: 'Pendientes de reconteo', sub: 'Operación', icon: ShieldAlert },
+  { id: 'dashboard', label: 'Dashboard', sub: 'Gerencia', icon: LayoutDashboard },
   { id: 'reporte', label: 'Reporte de diferencias', sub: 'Gerencia', icon: BarChart3 },
 ]
 
-export default function Sidebar({ activo, onCambiar, tiendaActiva, usuario, onSalir }) {
+const ITEM_ADMIN = { id: 'colaboradores', label: 'Colaboradores', sub: 'Admin', icon: Users }
+
+export default function Sidebar({ activo, onCambiar, tiendaActiva, usuario, esAdmin, pendientesCount, onSalir }) {
+  const items = esAdmin ? [...ITEMS, ITEM_ADMIN] : ITEMS
   return (
     <aside className="w-full md:w-64 bg-ink text-paper flex md:flex-col shrink-0">
       <div className="px-5 py-6 hidden md:flex items-center gap-2 border-b border-ink-line">
@@ -30,7 +47,7 @@ export default function Sidebar({ activo, onCambiar, tiendaActiva, usuario, onSa
       )}
 
       <nav className="flex md:flex-col flex-1 overflow-x-auto md:overflow-visible">
-        {ITEMS.map((item, idx) => {
+        {items.map((item, idx) => {
           const Icon = item.icon
           const activeItem = activo === item.id
           return (
@@ -48,7 +65,14 @@ export default function Sidebar({ activo, onCambiar, tiendaActiva, usuario, onSa
               </span>
               <Icon size={17} className={activeItem ? 'text-signal' : ''} />
               <span className="flex flex-col">
-                <span className="text-sm font-medium">{item.label}</span>
+                <span className="text-sm font-medium flex items-center gap-1.5">
+                  {item.label}
+                  {item.id === 'pendientes' && pendientesCount > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-signal text-ink text-[10px] font-bold">
+                      {pendientesCount}
+                    </span>
+                  )}
+                </span>
                 <span className="text-[11px] text-slate-soft hidden md:block">{item.sub}</span>
               </span>
             </button>

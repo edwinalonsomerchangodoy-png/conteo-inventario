@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Download, RefreshCw } from 'lucide-react'
 import { Card, Eyebrow, Badge } from '../components/ui.jsx'
-import { descargarCSV } from '../lib/storage.js'
+import { descargarExcel } from '../lib/storage.js'
 import { borrarTodosLosConteos } from '../lib/db.js'
 
 const COLUMNAS = [
@@ -11,6 +11,8 @@ const COLUMNAS = [
   'codigo',
   'producto',
   'area',
+  'categoria',
+  'proveedor',
   'stock_sistema',
   'conteo_1',
   'conteo_2',
@@ -46,6 +48,7 @@ function badgeInfo(c) {
 
 export default function Reports({ conteos, onRecargar }) {
   const [borrando, setBorrando] = useState(false)
+  const [exportando, setExportando] = useState(false)
   const resumen = useMemo(() => {
     const estados = conteos.map(estadoDe)
     return {
@@ -78,11 +81,19 @@ export default function Reports({ conteos, onRecargar }) {
               Actualizar
             </button>
             <button
-              onClick={() => descargarCSV('reporte_conteos.csv', conteos, COLUMNAS)}
-              className="inline-flex items-center gap-2 bg-ink text-paper px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-ink-soft transition-colors"
+              onClick={async () => {
+                setExportando(true)
+                try {
+                  await descargarExcel('reporte_conteos.xlsx', conteos, COLUMNAS, 'Conteos')
+                } finally {
+                  setExportando(false)
+                }
+              }}
+              disabled={exportando}
+              className="inline-flex items-center gap-2 bg-ink text-paper px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-ink-soft transition-colors disabled:opacity-50"
             >
               <Download size={16} />
-              Descargar CSV
+              {exportando ? 'Generando...' : 'Descargar Excel'}
             </button>
             <button
               onClick={async () => {
@@ -156,6 +167,8 @@ export default function Reports({ conteos, onRecargar }) {
                     <th className="text-left px-4 py-3">Código</th>
                     <th className="text-left px-4 py-3">Producto</th>
                     <th className="text-left px-4 py-3">Área</th>
+                    <th className="text-left px-4 py-3">Categoría</th>
+                    <th className="text-left px-4 py-3">Proveedor</th>
                     <th className="text-right px-4 py-3">Sistema</th>
                     <th className="text-right px-4 py-3">Físico</th>
                     <th className="text-right px-4 py-3">Estado</th>
@@ -172,6 +185,8 @@ export default function Reports({ conteos, onRecargar }) {
                         <td className="px-4 py-3 code-tag">{c.codigo}</td>
                         <td className="px-4 py-3">{c.producto}</td>
                         <td className="px-4 py-3 text-slate-soft">{c.area}</td>
+                        <td className="px-4 py-3 text-slate-soft">{c.categoria}</td>
+                        <td className="px-4 py-3 text-slate-soft">{c.proveedor}</td>
                         <td className="px-4 py-3 text-right code-tag">{c.stock_sistema}</td>
                         <td className="px-4 py-3 text-right code-tag">{c.conteo_fisico}</td>
                         <td className="px-4 py-3 text-right">

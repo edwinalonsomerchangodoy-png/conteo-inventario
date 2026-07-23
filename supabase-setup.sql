@@ -15,8 +15,11 @@ create table if not exists stock (
   codigo text not null,
   producto text,
   area text,
+  categoria text,
+  proveedor text,
   tienda text not null references tiendas (nombre),
   stock_sistema integer not null default 0,
+  alt_codigos text[] default '{}',
   updated_at timestamptz not null default now(),
   unique (codigo, tienda)
 );
@@ -34,6 +37,8 @@ create table if not exists conteos (
   codigo text not null,
   producto text,
   area text,
+  categoria text,
+  proveedor text,
   stock_sistema integer,
   conteo_1 integer,
   conteo_2 integer,
@@ -44,6 +49,19 @@ create table if not exists conteos (
 );
 
 create index if not exists conteos_tienda_idx on conteos (tienda);
+
+-- Listas de conteo selectivo: un subconjunto de códigos de una tienda para
+-- contar solo esas referencias en vez de todo el inventario.
+create table if not exists listas_conteo (
+  id bigint generated always as identity primary key,
+  nombre text not null,
+  tienda text not null references tiendas (nombre),
+  codigos text[] not null default '{}',
+  creado_por text,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists listas_conteo_tienda_idx on listas_conteo (tienda);
 
 -- Seguridad: solo colaboradores con sesión iniciada pueden leer/escribir.
 alter table tiendas enable row level security;
@@ -72,3 +90,12 @@ drop policy if exists "conteos_update" on conteos;
 create policy "conteos_update" on conteos for update to authenticated using (true);
 drop policy if exists "conteos_delete" on conteos;
 create policy "conteos_delete" on conteos for delete to authenticated using (true);
+
+alter table listas_conteo enable row level security;
+
+drop policy if exists "listas_conteo_select" on listas_conteo;
+create policy "listas_conteo_select" on listas_conteo for select to authenticated using (true);
+drop policy if exists "listas_conteo_insert" on listas_conteo;
+create policy "listas_conteo_insert" on listas_conteo for insert to authenticated with check (true);
+drop policy if exists "listas_conteo_delete" on listas_conteo;
+create policy "listas_conteo_delete" on listas_conteo for delete to authenticated using (true);

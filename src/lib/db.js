@@ -81,3 +81,28 @@ export async function borrarTodosLosConteos() {
   const { error } = await supabase.from('conteos').delete().gt('id', 0)
   if (error) throw error
 }
+
+export async function getListasConteo(tienda) {
+  if (!tienda) return []
+  const { data, error } = await supabase
+    .from('listas_conteo')
+    .select('*')
+    .eq('tienda', tienda)
+    .order('creado_en', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+export async function crearListaConteo({ nombre, tienda, codigos, creadoPor }) {
+  const { data, error } = await supabase
+    .from('listas_conteo')
+    .insert({ nombre, tienda, codigos, creado_por: creadoPor })
+    .select()
+  if (error) throw error
+  return data?.[0]
+}
+
+export async function eliminarListaConteo(id) {
+  const { error } = await supabase.from('listas_conteo').delete().eq('id', id)
+  if (error) throw error
+}

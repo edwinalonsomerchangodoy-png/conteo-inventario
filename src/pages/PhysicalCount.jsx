@@ -3,8 +3,9 @@ import { CheckCircle2, AlertTriangle, XCircle, PlusCircle, RotateCcw, ShieldAler
 import { Card, Eyebrow, Field, inputClass, Badge } from '../components/ui.jsx'
 import { limpiarCodigo, buscarPorCodigo } from '../lib/storage.js'
 import { upsertConteo, eliminarConteo } from '../lib/db.js'
+import { construirFilaPrimero, construirFilaReconteo } from '../lib/conteoLogic.js'
 
-export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, onConteoGuardado }) {
+export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, listaActiva, onConteoGuardado }) {
   const [codigo, setCodigo] = useState('')
   const [cantidadEscaneo, setCantidadEscaneo] = useState(1)
   const [focused, setFocused] = useState(false)
@@ -59,34 +60,23 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
   const guardarConteo = async () => {
     if (!producto) return
     setGuardando(true)
-    const stockSistema = Number(producto.stock_sistema)
     const cantidad = Number(cantidadEscaneo) || 0
     let fila
     let mensaje
 
     if (modo === 'primero') {
-      const base = filaExistente ? Number(filaExistente.conteo_1) || 0 : 0
-      const total = base + cantidad
-      const diferencia = total - stockSistema
-      const estado = diferencia === 0 ? 'ok' : 'pendiente_reconteo'
-
-      fila = {
-        fecha: new Date().toISOString(),
+      const resultadoCalculo = construirFilaPrimero({
+        producto,
+        codigoLimpio,
+        tiendaActiva,
         usuario,
-        tienda: tiendaActiva || '',
-        codigo: codigoLimpio,
-        producto: producto.producto,
-        area: producto.area,
-        stock_sistema: stockSistema,
-        conteo_1: total,
-        conteo_2: null,
-        conteo_fisico: total,
-        diferencia,
-        estado,
-      }
+        filaExistente,
+        cantidad,
+      })
+      fila = resultadoCalculo.fila
 
       mensaje =
-        estado === 'ok'
+        resultadoCalculo.estado === 'ok'
           ? { tono: 'ok', texto: 'Conteo correcto', Icon: CheckCircle2 }
           : {
               tono: 'pending',
@@ -94,26 +84,9 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
               Icon: ShieldAlert,
             }
     } else {
-      const baseReconteo = Number(filaExistente.conteo_2) || 0
-      const totalReconteo = baseReconteo + cantidad
-      const coincide = totalReconteo === Number(filaExistente.conteo_1)
-      const estado = coincide ? 'confirmado' : 'revisar'
-      const diferencia = totalReconteo - stockSistema
-
-      // Ojo: filaExistente trae un "id" que genera Supabase automáticamente
-      // (columna identity). Si se reenvía tal cual, Supabase rechaza el
-      // guardado — por eso se excluye aquí antes de armar la fila nueva.
-      const { id: _id, ...restoFilaExistente } = filaExistente
-
-      fila = {
-        ...restoFilaExistente,
-        fecha: new Date().toISOString(),
-        usuario,
-        conteo_2: totalReconteo,
-        conteo_fisico: totalReconteo,
-        diferencia,
-        estado,
-      }
+      const resultadoCalculo = construirFilaReconteo({ filaExistente, usuario, cantidad })
+      fila = resultadoCalculo.fila
+      const { coincide, diferencia, totalReconteo } = resultadoCalculo
 
       if (coincide) {
         mensaje =
@@ -171,6 +144,12 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
             No hay ninguna tienda activa. Ve a "Carga inicial desde Excel" para elegir una.
           </p>
         )}
+        {listaActiva && (
+          <p className="text-xs mt-2 bg-signal/10 border border-signal/30 rounded-md px-3 py-2 inline-block">
+            Contando lista selectiva: <span className="font-medium">{listaActiva.nombre}</span> (
+            {listaActiva.codigos.length} referencias)
+          </p>
+        )}
       </div>
 
       <Card className="p-6 space-y-5">
@@ -214,6 +193,12 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
               <span className="code-tag text-signal font-semibold">{producto.stock_sistema}</span>{' '}
               🔒
             </p>
+
+            {listaActiva && !listaActiva.codigos.includes(producto.codigo) && (
+              <p className="text-xs text-signal bg-signal/10 border border-signal/30 rounded-md px-2.5 py-1.5 mt-1">
+                Este producto no pertenece a la lista selectiva activa, pero el conteo se guardará igual.
+              </p>
+            )}
 
             {modo === 'reconteo' && (
               <div className="bg-signal/10 border border-signal/30 rounded-md p-3 mt-2 space-y-1">

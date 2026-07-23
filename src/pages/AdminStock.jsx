@@ -8,6 +8,8 @@ export default function AdminStock({ stock, tiendaActiva, cargando, onRecargar }
   const [codigo, setCodigo] = useState('')
   const [producto, setProducto] = useState('')
   const [area, setArea] = useState('')
+  const [categoria, setCategoria] = useState('')
+  const [proveedor, setProveedor] = useState('')
   const [cantidad, setCantidad] = useState(0)
   const [focused, setFocused] = useState(false)
   const [mensaje, setMensaje] = useState(null)
@@ -35,12 +37,16 @@ export default function AdminStock({ stock, tiendaActiva, cargando, onRecargar }
         codigo: codigoLimpio,
         producto,
         area,
+        categoria,
+        proveedor,
         tienda: tiendaActiva,
         stock_sistema: Number(cantidad) || 0,
       })
       setMensaje(`Stock guardado para ${codigoLimpio}`)
       setCodigo('')
       setProducto('')
+      setCategoria('')
+      setProveedor('')
       setCantidad(0)
       onRecargar()
       setTimeout(() => setMensaje(null), 2500)
@@ -119,6 +125,24 @@ export default function AdminStock({ stock, tiendaActiva, cargando, onRecargar }
                 className={inputClass}
                 value={cantidad}
                 onChange={(e) => setCantidad(e.target.value)}
+              />
+            </Field>
+
+            <Field label="Categoría (opcional)">
+              <input
+                className={inputClass}
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value)}
+                placeholder="Ej. Analgésicos"
+              />
+            </Field>
+
+            <Field label="Proveedor (opcional)">
+              <input
+                className={inputClass}
+                value={proveedor}
+                onChange={(e) => setProveedor(e.target.value)}
+                placeholder="Ej. Genfar"
               />
             </Field>
 

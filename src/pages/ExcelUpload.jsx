@@ -54,7 +54,7 @@ export default function ExcelUpload({ tiendaActiva, onCambiarTienda, onCargado }
     await subirLote(normalizado, [tiendaSeleccion])
   }
 
-  const subirLote = async (filas, nombresTienda) => {
+const subirLote = async (filas, nombresTienda) => {
     setEstado('subiendo')
     setDetalle('Subiendo a la base de datos compartida...')
     setProgreso({ actual: 0, total: filas.length })
@@ -65,6 +65,12 @@ export default function ExcelUpload({ tiendaActiva, onCambiarTienda, onCargado }
       setTiendasGuardadas(listaActualizada)
       setEstado('ok')
       setDetalle(`${filas.length} referencias subidas correctamente para ${nombresTienda.length} tienda(s).`)
+      // Si la tienda activa de esta sesión quedó incluida en la subida,
+      // refresca el stock en memoria — si no, "Conteo físico" seguiría
+      // usando la copia vieja hasta recargar la página.
+      if (tiendaActiva && nombresTienda.includes(tiendaActiva)) {
+        onCargado()
+      }
     } catch (err) {
       console.error(err)
       setEstado('error')

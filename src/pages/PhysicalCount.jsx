@@ -93,7 +93,7 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, o
               texto: 'Diferencia detectada — se requiere reconteo de confirmación',
               Icon: ShieldAlert,
             }
-    } } else {
+    } else {
       const baseReconteo = Number(filaExistente.conteo_2) || 0
       const totalReconteo = baseReconteo + cantidad
       const coincide = totalReconteo === Number(filaExistente.conteo_1)

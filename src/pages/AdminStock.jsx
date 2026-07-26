@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Trash2, Save, Search } from 'lucide-react'
+import { Trash2, Save, Search, Camera } from 'lucide-react'
 import { Card, Eyebrow, Field, inputClass, Badge } from '../components/ui.jsx'
+import CameraScanner from '../components/CameraScanner.jsx'
 import { limpiarCodigo, AREAS } from '../lib/storage.js'
 import { upsertStockManual, eliminarStockFila } from '../lib/db.js'
 
@@ -15,6 +16,7 @@ export default function AdminStock({ stock, tiendaActiva, cargando, onRecargar }
   const [mensaje, setMensaje] = useState(null)
   const [busqueda, setBusqueda] = useState('')
   const [guardando, setGuardando] = useState(false)
+  const [mostrarCamara, setMostrarCamara] = useState(false)
 
   const filtrado = useMemo(() => {
     if (!busqueda.trim()) return stock
@@ -80,9 +82,9 @@ export default function AdminStock({ stock, tiendaActiva, cargando, onRecargar }
         <Card className="p-6">
           <form onSubmit={guardar} className="grid sm:grid-cols-2 gap-4">
             <Field label="Código del producto (escáner)">
-              <div className={`scan-frame ${focused ? 'is-active' : ''}`}>
+              <div className={`scan-frame ${focused ? 'is-active' : ''} flex items-stretch gap-2`}>
                 <input
-                  className={`${inputClass} code-tag`}
+                  className={`${inputClass} code-tag flex-1`}
                   value={codigo}
                   onChange={(e) => setCodigo(e.target.value)}
                   onFocus={() => setFocused(true)}
@@ -90,8 +92,26 @@ export default function AdminStock({ stock, tiendaActiva, cargando, onRecargar }
                   placeholder="7891234567890"
                   autoComplete="off"
                 />
+                <button
+                  type="button"
+                  onClick={() => setMostrarCamara(true)}
+                  title="Escanear con la cámara"
+                  className="shrink-0 px-3 rounded-lg border border-black/10 text-slate-soft hover:text-signal-dim hover:border-signal/40 transition-colors"
+                >
+                  <Camera size={18} />
+                </button>
               </div>
             </Field>
+
+            {mostrarCamara && (
+              <CameraScanner
+                onDetectado={(texto) => {
+                  setCodigo(limpiarCodigo(texto))
+                  setMostrarCamara(false)
+                }}
+                onCerrar={() => setMostrarCamara(false)}
+              />
+            )}
 
             <Field label="Nombre del producto">
               <input

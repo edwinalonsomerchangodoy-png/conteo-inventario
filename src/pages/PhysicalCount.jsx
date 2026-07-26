@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { CheckCircle2, AlertTriangle, XCircle, PlusCircle, RotateCcw, ShieldAlert } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, XCircle, PlusCircle, RotateCcw, ShieldAlert, Camera } from 'lucide-react'
 import { Card, Eyebrow, Field, inputClass, Badge } from '../components/ui.jsx'
+import CameraScanner from '../components/CameraScanner.jsx'
 import { limpiarCodigo, buscarPorCodigo } from '../lib/storage.js'
 import { upsertConteo, eliminarConteo } from '../lib/db.js'
 import { construirFilaPrimero, construirFilaReconteo } from '../lib/conteoLogic.js'
@@ -11,6 +12,8 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
   const [focused, setFocused] = useState(false)
   const [resultado, setResultado] = useState(null)
   const [guardando, setGuardando] = useState(false)
+  const [mostrarCamara, setMostrarCamara] = useState(false)
+  const [autoGuardar, setAutoGuardar] = useState(false)
   const inputCodigoRef = useRef(null)
 
   const codigoLimpio = limpiarCodigo(codigo)
@@ -27,6 +30,24 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
   let modo = 'primero'
   if (filaExistente) {
     modo = filaExistente.estado === 'pendiente_reconteo' ? 'reconteo' : 'cerrado'
+  }
+
+  useEffect(() => {
+    if (autoGuardar && producto && modo !== 'cerrado') {
+      setAutoGuardar(false)
+      guardarConteo()
+    } else if (autoGuardar && !producto && codigoLimpio) {
+      setAutoGuardar(false)
+      registrarNoEncontrado()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoGuardar, producto])
+
+  const manejarCodigoDetectado = (texto) => {
+    setMostrarCamara(false)
+    setCodigo(texto)
+    setResultado(null)
+    setAutoGuardar(true)
   }
 
   const reiniciarConteo = async () => {
@@ -154,10 +175,10 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
 
       <Card className="p-6 space-y-5">
         <Field label="Escanea el código del producto">
-          <div className={`scan-frame ${focused ? 'is-active' : ''}`}>
+          <div className={`scan-frame ${focused ? 'is-active' : ''} flex items-stretch gap-2`}>
             <input
               ref={inputCodigoRef}
-              className={`${inputClass} code-tag text-base`}
+              className={`${inputClass} code-tag text-base flex-1`}
               value={codigo}
               onChange={(e) => {
                 setCodigo(e.target.value)
@@ -179,8 +200,20 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
               autoComplete="off"
               autoFocus
             />
+            <button
+              type="button"
+              onClick={() => setMostrarCamara(true)}
+              title="Escanear con la cámara"
+              className="shrink-0 px-3 rounded-lg border border-black/10 text-slate-soft hover:text-signal-dim hover:border-signal/40 transition-colors"
+            >
+              <Camera size={18} />
+            </button>
           </div>
         </Field>
+
+        {mostrarCamara && (
+          <CameraScanner onDetectado={manejarCodigoDetectado} onCerrar={() => setMostrarCamara(false)} />
+        )}
 
         {codigoLimpio && producto && (
           <div className="rounded-lg bg-ink text-paper p-4 space-y-1.5">

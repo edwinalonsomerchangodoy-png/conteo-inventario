@@ -15,19 +15,19 @@ body,
 body {
   margin: 0;
   background: #F6F5F1;
-  color: #14181F;
+  color: #122019;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: #FFB020;
-  color: #14181F;
+  background: #D9A544;
+  color: #122019;
 }
 
 /* Focus ring, kept visible for accessibility */
 :focus-visible {
-  outline: 2px solid #FFB020;
+  outline: 2px solid #D9A544;
   outline-offset: 2px;
 }
 
@@ -44,7 +44,7 @@ body {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #FFB020, transparent);
+  background: linear-gradient(90deg, transparent, #D9A544, transparent);
   top: 0;
   opacity: 0;
   pointer-events: none;
@@ -83,7 +83,7 @@ body {
 
 /* Thin dividers used as structural devices */
 .hairline {
-  border-color: #2A313C1a;
+  border-color: #28402f1a;
 }
 
 table.data-table th {
@@ -96,5 +96,5 @@ table.data-table th {
 }
 
 table.data-table tbody tr {
-  border-top: 1px solid #14181F0f;
+  border-top: 1px solid #1220190f;
 }

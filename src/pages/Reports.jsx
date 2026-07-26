@@ -90,7 +90,7 @@ export default function Reports({ conteos, onRecargar }) {
                 }
               }}
               disabled={exportando}
-              className="inline-flex items-center gap-2 bg-ink text-paper px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-ink-soft transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-brand-dark transition-colors disabled:opacity-50"
             >
               <Download size={16} />
               {exportando ? 'Generando...' : 'Descargar Excel'}
@@ -143,9 +143,7 @@ export default function Reports({ conteos, onRecargar }) {
             </Card>
             <Card className="p-4">
               <p className="text-xs text-slate-soft">A revisar</p>
-              <p className="text-2xl font-display font-bold code-tag text-purple-700">
-                {resumen.revisar}
-              </p>
+              <p className="text-2xl font-display font-bold code-tag text-teal">{resumen.revisar}</p>
             </Card>
           </div>
 

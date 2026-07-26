@@ -197,7 +197,7 @@ export default function ExcelUpload({ tiendaActiva, onCambiarTienda, onCargado }
             <button
               onClick={activarTienda}
               disabled={!tiendaSeleccion}
-              className="bg-ink text-paper px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-ink-soft transition-colors disabled:opacity-40"
+              className="bg-brand text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-brand-dark transition-colors disabled:opacity-40"
             >
               Activar esta tienda para mi sesión
             </button>

@@ -138,7 +138,7 @@ export default function ConteosSelectivos({ stock, tiendaActiva, usuario, listaA
                     }}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                       metodo === m.id
-                        ? 'bg-ink text-paper border-ink'
+                        ? 'bg-brand text-white border-brand'
                         : 'border-black/10 text-slate-soft hover:bg-black/5'
                     }`}
                   >
@@ -194,7 +194,7 @@ export default function ConteosSelectivos({ stock, tiendaActiva, usuario, listaA
             <button
               onClick={crear}
               disabled={creando || previaCodigos.length === 0 || !nombre.trim()}
-              className="inline-flex items-center gap-2 bg-ink text-paper px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-ink-soft transition-colors disabled:opacity-40"
+              className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-brand-dark transition-colors disabled:opacity-40"
             >
               <ListFilter size={16} />
               {creando ? 'Creando...' : 'Crear lista'}

@@ -3,13 +3,13 @@ import {
   FileSpreadsheet,
   ScanLine,
   BarChart3,
-  Package,
   LogOut,
   Users,
   ShieldAlert,
   ListFilter,
   LayoutDashboard,
 } from 'lucide-react'
+import logo from '../assets/locatel-logo.png'
 
 const ITEMS = [
   { id: 'admin', label: 'Carga de stock', sub: 'Admin', icon: ShieldCheck },
@@ -27,12 +27,12 @@ export default function Sidebar({ activo, onCambiar, tiendaActiva, usuario, esAd
   const items = esAdmin ? [...ITEMS, ITEM_ADMIN] : ITEMS
   return (
     <aside className="w-full md:w-64 bg-ink text-paper flex md:flex-col shrink-0">
-      <div className="px-5 py-6 hidden md:flex items-center gap-2 border-b border-ink-line">
-        <Package size={20} className="text-signal" />
+      <div className="px-5 py-6 hidden md:flex flex-col gap-3 border-b border-ink-line">
+        <img src={logo} alt="Locatel" className="h-9 w-auto self-start rounded-md" />
         <div>
-          <p className="font-display font-bold tracking-tight leading-none">CONTEO</p>
-          <p className="text-[10px] code-tag text-slate-soft tracking-widest">
-            INVENTARIO · 01
+          <p className="font-display font-bold tracking-tight leading-none">Conteo de Inventario</p>
+          <p className="text-[10px] code-tag text-slate-soft tracking-widest mt-1">
+            SISTEMA DE CONTEO · 01
           </p>
         </div>
       </div>

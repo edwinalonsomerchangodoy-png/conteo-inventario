@@ -21,7 +21,7 @@ export function Badge({ tone = 'ok', children }) {
     bad: 'bg-bad/10 text-bad border-bad/20',
     neutral: 'bg-ink/5 text-ink border-ink/10',
     pending: 'bg-signal/10 text-signal-dim border-signal/30',
-    flag: 'bg-purple-500/10 text-purple-700 border-purple-500/25',
+    flag: 'bg-teal/10 text-teal border-teal/25',
   }
   return (
     <span

@@ -16,10 +16,10 @@ import {
 import { Card, Eyebrow } from '../components/ui.jsx'
 
 const COLORES = {
-  ok: '#2E7D5B',
+  ok: '#00953E',
   diferencia: '#C1443A',
-  pendiente: '#E39D14',
-  revisar: '#7C3AED',
+  pendiente: '#D9A544',
+  revisar: '#00947A',
   neutral: '#D8D6CF',
 }
 

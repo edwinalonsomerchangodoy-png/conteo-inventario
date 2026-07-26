@@ -5,14 +5,22 @@ export default {
     extend: {
       colors: {
         ink: {
-          DEFAULT: '#14181F',
-          soft: '#1D232D',
-          line: '#2A313C',
+          DEFAULT: '#122019',
+          soft: '#1B2E24',
+          line: '#28402F',
         },
         paper: '#F6F5F1',
+        brand: {
+          DEFAULT: '#00953E',
+          dark: '#00722F',
+          light: '#E7F6EC',
+        },
+        teal: {
+          DEFAULT: '#00947A',
+        },
         signal: {
-          DEFAULT: '#FFB020',
-          dim: '#E39D14',
+          DEFAULT: '#D9A544',
+          dim: '#B9862E',
         },
         ok: '#2E7D5B',
         warn: '#C1873A',

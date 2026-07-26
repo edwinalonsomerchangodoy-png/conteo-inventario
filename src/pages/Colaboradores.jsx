@@ -116,7 +116,7 @@ export default function Colaboradores({ accessToken }) {
             <button
               type="submit"
               disabled={creando}
-              className="inline-flex items-center gap-2 bg-ink text-paper px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-ink-soft transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-brand-dark transition-colors disabled:opacity-50"
             >
               <UserPlus size={16} />
               {creando ? 'Creando...' : 'Crear cuenta'}

@@ -63,6 +63,10 @@ create table if not exists listas_conteo (
 
 create index if not exists listas_conteo_tienda_idx on listas_conteo (tienda);
 
+-- La lista activa de cada tienda: se guarda aquí para que todos los
+-- dispositivos que cuenten en esa tienda la vean automáticamente.
+alter table tiendas add column if not exists lista_activa_id bigint references listas_conteo (id) on delete set null;
+
 -- Seguridad: solo colaboradores con sesión iniciada pueden leer/escribir.
 alter table tiendas enable row level security;
 alter table stock enable row level security;

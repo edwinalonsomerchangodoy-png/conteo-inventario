@@ -62,29 +62,6 @@ export function setTiendaActiva(nombre) {
   }
 }
 
-const LISTA_ACTIVA_KEY = 'inventario_lista_activa_v1'
-
-export function getListaActivaId() {
-  try {
-    const raw = localStorage.getItem(LISTA_ACTIVA_KEY)
-    return raw ? Number(raw) : null
-  } catch {
-    return null
-  }
-}
-
-export function setListaActivaId(id) {
-  try {
-    if (id === null || id === undefined) {
-      localStorage.removeItem(LISTA_ACTIVA_KEY)
-    } else {
-      localStorage.setItem(LISTA_ACTIVA_KEY, String(id))
-    }
-  } catch {
-    /* noop */
-  }
-}
-
 export function upsertStockRow(stock, row) {
   const sinDuplicado = stock.filter((r) => r.codigo !== row.codigo)
   return [...sinDuplicado, row]

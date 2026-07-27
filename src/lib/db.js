@@ -106,3 +106,15 @@ export async function eliminarListaConteo(id) {
   const { error } = await supabase.from('listas_conteo').delete().eq('id', id)
   if (error) throw error
 }
+
+export async function getTiendaInfo(tienda) {
+  if (!tienda) return null
+  const { data, error } = await supabase.from('tiendas').select('*').eq('nombre', tienda).maybeSingle()
+  if (error) throw error
+  return data
+}
+
+export async function setListaActivaTienda(tienda, listaId) {
+  const { error } = await supabase.from('tiendas').update({ lista_activa_id: listaId }).eq('nombre', tienda)
+  if (error) throw error
+}

@@ -10,13 +10,14 @@ import ConteosSelectivos from './pages/ConteosSelectivos.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Reports from './pages/Reports.jsx'
 import Colaboradores from './pages/Colaboradores.jsx'
+import { getTiendaActiva, setTiendaActiva as persistTiendaActiva } from './lib/storage.js'
 import {
-  getTiendaActiva,
-  setTiendaActiva as persistTiendaActiva,
-  getListaActivaId,
-  setListaActivaId as persistListaActivaId,
-} from './lib/storage.js'
-import { getStockPorTienda, getConteos as getConteosDb, getListasConteo } from './lib/db.js'
+  getStockPorTienda,
+  getConteos as getConteosDb,
+  getListasConteo,
+  getTiendaInfo,
+  setListaActivaTienda,
+} from './lib/db.js'
 
 export default function App() {
   // undefined = todavía verificando si hay sesión guardada; null = sin sesión
@@ -37,7 +38,6 @@ export default function App() {
 
   useEffect(() => {
     setTiendaActivaState(getTiendaActiva())
-    setListaActivaIdState(getListaActivaId())
   }, [])
 
   const cargarStock = useCallback(async (tienda) => {
@@ -65,14 +65,19 @@ export default function App() {
     }
   }, [])
 
+  // La lista activa se guarda por tienda en la base de datos (no en el
+  // navegador), para que cualquier dispositivo que entre a esa tienda vea
+  // automáticamente la misma lista que activó cualquier otro colaborador.
   const cargarListas = useCallback(async (tienda) => {
     if (!tienda) {
       setListasDisponibles([])
+      setListaActivaIdState(null)
       return
     }
     try {
-      const filas = await getListasConteo(tienda)
+      const [filas, tiendaInfo] = await Promise.all([getListasConteo(tienda), getTiendaInfo(tienda)])
       setListasDisponibles(filas)
+      setListaActivaIdState(tiendaInfo?.lista_activa_id ?? null)
     } catch (err) {
       console.error('Error cargando listas de conteo', err)
     }
@@ -93,15 +98,16 @@ export default function App() {
   const setTiendaActiva = (nombre) => {
     setTiendaActivaState(nombre)
     persistTiendaActiva(nombre)
-    // Una lista selectiva pertenece a una tienda específica; al cambiar de
-    // tienda, se limpia para evitar mezclar referencias de otra tienda.
-    setListaActivaIdState(null)
-    persistListaActivaId(null)
   }
 
-  const setListaActiva = (id) => {
+  const setListaActiva = async (id) => {
+    if (!tiendaActiva) return
     setListaActivaIdState(id)
-    persistListaActivaId(id)
+    try {
+      await setListaActivaTienda(tiendaActiva, id)
+    } catch (err) {
+      console.error('Error activando la lista de conteo', err)
+    }
   }
 
   if (session === undefined) {

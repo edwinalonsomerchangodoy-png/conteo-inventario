@@ -18,13 +18,18 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
 
   const codigoLimpio = limpiarCodigo(codigo)
   const producto = codigoLimpio ? buscarPorCodigo(stock, codigoLimpio) : null
+  // El código "canónico" es el código principal del producto (el que se usa
+  // para guardar y comparar conteos), sin importar si lo que se escaneó fue
+  // un código alterno. Así, escanear cualquiera de los códigos de un
+  // producto siempre apunta al mismo conteo.
+  const codigoCanonico = producto ? producto.codigo : codigoLimpio
 
   useEffect(() => {
     setCantidadEscaneo(1)
   }, [codigoLimpio])
 
-  const filaExistente = codigoLimpio
-    ? conteos.find((c) => c.codigo === codigoLimpio && (c.tienda || '') === (tiendaActiva || ''))
+  const filaExistente = codigoCanonico
+    ? conteos.find((c) => c.codigo === codigoCanonico && (c.tienda || '') === (tiendaActiva || ''))
     : null
 
   let modo = 'primero'
@@ -35,7 +40,9 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
   // Cuando hay una lista selectiva activa: productos de esa lista que aún no
   // se han contado ni una vez. Un producto sale de esta lista en cuanto se
   // guarda su primer conteo (aunque quede pendiente de reconteo, porque eso
-  // ya se maneja en "Pendientes de reconteo").
+  // ya se maneja en "Pendientes de reconteo"). Los códigos de la lista se
+  // resuelven contra el catálogo (incluyendo códigos alternos) para no
+  // descartar productos por error.
   const codigosContados = useMemo(() => {
     return new Set(
       conteos
@@ -47,9 +54,16 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
   const pendientesLista = useMemo(() => {
     if (!listaActiva) return []
     return listaActiva.codigos
-      .filter((cod) => !codigosContados.has(cod))
-      .map((cod) => stock.find((s) => s.codigo === cod))
-      .filter(Boolean)
+      .map((cod) => {
+        const encontrado = buscarPorCodigo(stock, cod)
+        const claveComparacion = encontrado ? encontrado.codigo : cod
+        return { cod, encontrado, claveComparacion }
+      })
+      .filter(({ claveComparacion }) => !codigosContados.has(claveComparacion))
+      .map(
+        ({ cod, encontrado }) =>
+          encontrado || { codigo: cod, producto: 'No encontrado en el catálogo de esta tienda', area: '—' }
+      )
   }, [listaActiva, codigosContados, stock])
 
   useEffect(() => {
@@ -108,7 +122,7 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
     if (modo === 'primero') {
       const resultadoCalculo = construirFilaPrimero({
         producto,
-        codigoLimpio,
+        codigoLimpio: codigoCanonico,
         tiendaActiva,
         usuario,
         filaExistente,
@@ -247,7 +261,10 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
               🔒
             </p>
 
-            {listaActiva && !listaActiva.codigos.includes(producto.codigo) && (
+            {listaActiva &&
+              !listaActiva.codigos.some(
+                (c) => c === producto.codigo || (producto.alt_codigos || []).includes(c)
+              ) && (
               <p className="text-xs text-signal bg-signal/10 border border-signal/30 rounded-md px-2.5 py-1.5 mt-1">
                 Este producto no pertenece a la lista selectiva activa, pero el conteo se guardará igual.
               </p>

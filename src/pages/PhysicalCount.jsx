@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { CheckCircle2, AlertTriangle, XCircle, PlusCircle, RotateCcw, ShieldAlert, Camera } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { CheckCircle2, AlertTriangle, XCircle, PlusCircle, RotateCcw, ShieldAlert, Camera, ListChecks } from 'lucide-react'
 import { Card, Eyebrow, Field, inputClass, Badge } from '../components/ui.jsx'
 import CameraScanner from '../components/CameraScanner.jsx'
 import { limpiarCodigo, buscarPorCodigo } from '../lib/storage.js'
@@ -31,6 +31,26 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
   if (filaExistente) {
     modo = filaExistente.estado === 'pendiente_reconteo' ? 'reconteo' : 'cerrado'
   }
+
+  // Cuando hay una lista selectiva activa: productos de esa lista que aún no
+  // se han contado ni una vez. Un producto sale de esta lista en cuanto se
+  // guarda su primer conteo (aunque quede pendiente de reconteo, porque eso
+  // ya se maneja en "Pendientes de reconteo").
+  const codigosContados = useMemo(() => {
+    return new Set(
+      conteos
+        .filter((c) => (c.tienda || '') === (tiendaActiva || '') && c.producto !== 'NO REGISTRADO')
+        .map((c) => c.codigo)
+    )
+  }, [conteos, tiendaActiva])
+
+  const pendientesLista = useMemo(() => {
+    if (!listaActiva) return []
+    return listaActiva.codigos
+      .filter((cod) => !codigosContados.has(cod))
+      .map((cod) => stock.find((s) => s.codigo === cod))
+      .filter(Boolean)
+  }, [listaActiva, codigosContados, stock])
 
   useEffect(() => {
     if (autoGuardar && producto && modo !== 'cerrado') {
@@ -321,6 +341,52 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
           </Badge>
         )}
       </Card>
+
+      {listaActiva && (
+        <Card className="overflow-hidden">
+          <div className="px-5 pt-5 pb-3 flex items-center justify-between flex-wrap gap-2">
+            <p className="text-sm font-medium flex items-center gap-1.5">
+              <ListChecks size={15} className="text-signal-dim" />
+              Por contar de "{listaActiva.nombre}"
+            </p>
+            {pendientesLista.length === 0 ? (
+              <Badge tone="ok">Lista completa</Badge>
+            ) : (
+              <Badge tone="pending">
+                {pendientesLista.length} de {listaActiva.codigos.length} sin contar
+              </Badge>
+            )}
+          </div>
+
+          {pendientesLista.length === 0 ? (
+            <p className="px-5 pb-5 text-sm text-slate-soft">
+              🎉 Ya contaste al menos una vez todos los productos de esta lista.
+            </p>
+          ) : (
+            <div className="max-h-80 overflow-y-auto divide-y divide-black/5">
+              {pendientesLista.map((p) => (
+                <button
+                  key={p.codigo}
+                  onClick={() => {
+                    setCodigo(p.codigo)
+                    setResultado(null)
+                    inputCodigoRef.current?.focus()
+                  }}
+                  className="w-full text-left px-5 py-3 hover:bg-black/[0.03] transition-colors flex items-center justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{p.producto}</p>
+                    <p className="text-xs text-slate-soft">
+                      <span className="code-tag">{p.codigo}</span> · {p.area}
+                    </p>
+                  </div>
+                  <span className="text-xs text-signal-dim shrink-0">Contar →</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   )
 }

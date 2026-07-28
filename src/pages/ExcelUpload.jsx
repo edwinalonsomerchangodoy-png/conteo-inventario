@@ -8,7 +8,7 @@ import { upsertStockLote, upsertTiendas, getTiendasDisponibles } from '../lib/db
 
 const REQUERIDAS = ['codigo', 'producto', 'area', 'stock_sistema']
 
-export default function ExcelUpload({ tiendaActiva, onCambiarTienda, onCargado }) {
+export default function ExcelUpload({ tiendaActiva, onCambiarTienda, onCargado, onTiendasActualizadas }) {
   const [tiendasGuardadas, setTiendasGuardadas] = useState([])
   const [tiendaSeleccion, setTiendaSeleccion] = useState(tiendaActiva || '')
   const [estado, setEstado] = useState(null) // 'ok' | 'error' | 'subiendo'
@@ -63,6 +63,7 @@ export default function ExcelUpload({ tiendaActiva, onCambiarTienda, onCargado }
       await upsertStockLote(filas, (actual, total) => setProgreso({ actual, total }))
       const listaActualizada = await getTiendasDisponibles()
       setTiendasGuardadas(listaActualizada)
+      onTiendasActualizadas?.()
       setEstado('ok')
       setDetalle(`${filas.length} referencias subidas correctamente para ${nombresTienda.length} tienda(s).`)
       // Si la tienda activa de esta sesión quedó incluida en la subida,

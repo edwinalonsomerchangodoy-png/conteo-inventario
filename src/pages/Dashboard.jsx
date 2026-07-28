@@ -14,6 +14,7 @@ import {
   LabelList,
 } from 'recharts'
 import { Card, Eyebrow } from '../components/ui.jsx'
+import { buscarPorCodigo } from '../lib/storage.js'
 
 const COLORES = {
   ok: '#00953E',
@@ -45,7 +46,17 @@ function agruparPorDimension(conteos, campo, topN = 8) {
 
 export default function Dashboard({ stock, conteos, tiendaActiva, listaActiva }) {
   const universoSet = useMemo(() => {
-    if (listaActiva) return new Set(listaActiva.codigos)
+    if (listaActiva) {
+      // Los códigos de una lista selectiva pueden ser códigos alternos
+      // (por ejemplo si se pegaron a mano). Se resuelven contra el catálogo
+      // para comparar siempre contra el código principal del producto —
+      // que es el que queda guardado en cada conteo.
+      const canonicos = listaActiva.codigos.map((cod) => {
+        const encontrado = buscarPorCodigo(stock, cod)
+        return encontrado ? encontrado.codigo : cod
+      })
+      return new Set(canonicos)
+    }
     return new Set(stock.map((s) => s.codigo))
   }, [stock, listaActiva])
 

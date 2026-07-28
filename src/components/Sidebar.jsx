@@ -11,20 +11,22 @@ import {
 } from 'lucide-react'
 import logo from '../assets/locatel-logo.png'
 
-const ITEMS = [
-  { id: 'admin', label: 'Carga de stock', sub: 'Admin', icon: ShieldCheck },
-  { id: 'excel', label: 'Carga desde Excel', sub: 'Inicial', icon: FileSpreadsheet },
-  { id: 'selectivos', label: 'Conteos selectivos', sub: 'Admin', icon: ListFilter },
+const ITEMS_OPERACION = [
   { id: 'conteo', label: 'Conteo físico', sub: 'Operación', icon: ScanLine },
   { id: 'pendientes', label: 'Pendientes de reconteo', sub: 'Operación', icon: ShieldAlert },
   { id: 'dashboard', label: 'Dashboard', sub: 'Gerencia', icon: LayoutDashboard },
   { id: 'reporte', label: 'Reporte de diferencias', sub: 'Gerencia', icon: BarChart3 },
 ]
 
-const ITEM_ADMIN = { id: 'colaboradores', label: 'Colaboradores', sub: 'Admin', icon: Users }
+const ITEMS_ADMIN = [
+  { id: 'admin', label: 'Carga de stock', sub: 'Admin', icon: ShieldCheck },
+  { id: 'excel', label: 'Carga desde Excel', sub: 'Admin', icon: FileSpreadsheet },
+  { id: 'selectivos', label: 'Conteos selectivos', sub: 'Admin', icon: ListFilter },
+  { id: 'colaboradores', label: 'Colaboradores', sub: 'Admin', icon: Users },
+]
 
 export default function Sidebar({ activo, onCambiar, tiendaActiva, usuario, esAdmin, pendientesCount, onSalir }) {
-  const items = esAdmin ? [...ITEMS, ITEM_ADMIN] : ITEMS
+  const items = esAdmin ? [...ITEMS_OPERACION, ...ITEMS_ADMIN] : ITEMS_OPERACION
   return (
     <aside className="w-full md:w-64 bg-ink text-paper flex md:flex-col shrink-0">
       <div className="px-5 py-6 hidden md:flex flex-col gap-3 border-b border-ink-line">

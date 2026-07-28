@@ -1,12 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CheckCircle2, AlertTriangle, XCircle, PlusCircle, RotateCcw, ShieldAlert, Camera, ListChecks } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, XCircle, PlusCircle, RotateCcw, ShieldAlert, Camera, ListChecks, Store } from 'lucide-react'
 import { Card, Eyebrow, Field, inputClass, Badge } from '../components/ui.jsx'
 import CameraScanner from '../components/CameraScanner.jsx'
 import { limpiarCodigo, buscarPorCodigo } from '../lib/storage.js'
 import { upsertConteo, eliminarConteo } from '../lib/db.js'
 import { construirFilaPrimero, construirFilaReconteo } from '../lib/conteoLogic.js'
 
-export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, listaActiva, onConteoGuardado }) {
+export default function PhysicalCount({
+  stock,
+  conteos,
+  tiendaActiva,
+  tiendasDisponibles,
+  onCambiarTienda,
+  usuario,
+  listaActiva,
+  onConteoGuardado,
+}) {
   const [codigo, setCodigo] = useState('')
   const [cantidadEscaneo, setCantidadEscaneo] = useState(1)
   const [focused, setFocused] = useState(false)
@@ -187,18 +196,7 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
         </p>
         <p className="text-xs mt-2">
           Contando como: <span className="font-medium text-signal">{usuario}</span>
-          {tiendaActiva && (
-            <>
-              {' '}
-              en <span className="code-tag text-signal font-medium">{tiendaActiva}</span>
-            </>
-          )}
         </p>
-        {!tiendaActiva && (
-          <p className="text-xs mt-1 text-warn">
-            No hay ninguna tienda activa. Ve a "Carga inicial desde Excel" para elegir una.
-          </p>
-        )}
         {listaActiva && (
           <p className="text-xs mt-2 bg-signal/10 border border-signal/30 rounded-md px-3 py-2 inline-block">
             Contando lista selectiva: <span className="font-medium">{listaActiva.nombre}</span> (
@@ -206,6 +204,32 @@ export default function PhysicalCount({ stock, conteos, tiendaActiva, usuario, l
           </p>
         )}
       </div>
+
+      <Card className="p-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Store size={16} className="text-signal-dim shrink-0" />
+          <label className="text-xs font-medium text-slate-soft shrink-0">Tienda:</label>
+          {tiendasDisponibles && tiendasDisponibles.length > 0 ? (
+            <select
+              className={`${inputClass} max-w-xs`}
+              value={tiendaActiva}
+              onChange={(e) => onCambiarTienda(e.target.value)}
+            >
+              <option value="">Selecciona una tienda...</option>
+              {tiendasDisponibles.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="text-xs text-warn">
+              Todavía no hay tiendas cargadas. Pídele a un administrador que suba el archivo de
+              stock.
+            </p>
+          )}
+        </div>
+      </Card>
 
       <Card className="p-6 space-y-5">
         <Field label="Escanea el código del producto">

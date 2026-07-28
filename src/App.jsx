@@ -157,7 +157,7 @@ export default function App() {
         pendientesCount={pendientesCount}
         onSalir={() => supabase.auth.signOut()}
       />
-      <main className="flex-1 px-5 py-8 md:px-10 md:py-10 max-w-5xl">
+      <main className="flex-1 min-w-0 px-5 py-8 md:px-10 md:py-10">
         {paginaActual === 'admin' && esAdmin && (
           <AdminStock
             stock={stock}

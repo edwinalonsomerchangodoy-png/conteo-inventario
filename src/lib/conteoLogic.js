@@ -15,6 +15,7 @@ export function construirFilaPrimero({ producto, codigoLimpio, tiendaActiva, usu
       usuario,
       tienda: tiendaActiva || '',
       codigo: codigoLimpio,
+      alt_codigos: producto.alt_codigos || [],
       producto: producto.producto,
       area: producto.area,
       categoria: producto.categoria || '',
@@ -36,13 +37,15 @@ export function construirFilaReconteo({ filaExistente, usuario, cantidad }) {
   const baseReconteo = Number(filaExistente.conteo_2) || 0
   const totalReconteo = baseReconteo + cantidad
   const coincide = totalReconteo === Number(filaExistente.conteo_1)
-  const estado = coincide ? 'confirmado' : 'revisar'
   const diferencia = totalReconteo - stockSistema
 
   // filaExistente trae un "id" que Supabase genera automáticamente (columna
   // identity). Si se reenvía tal cual, Supabase rechaza el guardado.
   const { id: _id, ...resto } = filaExistente
 
+  // El reconteo siempre queda como el valor final — coincida o no con el
+  // primer conteo. Si no coincide, queda una señal visual (no bloqueante)
+  // en el reporte para que gerencia lo note, pero no exige más pasos.
   return {
     fila: {
       ...resto,
@@ -51,9 +54,9 @@ export function construirFilaReconteo({ filaExistente, usuario, cantidad }) {
       conteo_2: totalReconteo,
       conteo_fisico: totalReconteo,
       diferencia,
-      estado,
+      estado: 'confirmado',
     },
-    estado,
+    estado: 'confirmado',
     diferencia,
     coincide,
     totalReconteo,

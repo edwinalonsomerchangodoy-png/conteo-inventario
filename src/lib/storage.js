@@ -83,13 +83,18 @@ export function fechaHoy() {
   )}:${pad(d.getMinutes())}`
 }
 
+function celdaComoTexto(valor) {
+  if (Array.isArray(valor)) return valor.join(' / ')
+  return valor ?? ''
+}
+
 export function toCSV(rows, columns) {
   const header = columns.join(',')
   const body = rows
     .map((r) =>
       columns
         .map((c) => {
-          const val = r[c] ?? ''
+          const val = celdaComoTexto(r[c])
           const escaped = String(val).replace(/"/g, '""')
           return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped
         })
@@ -115,7 +120,7 @@ export async function descargarExcel(filename, rows, columns, nombreHoja = 'Dato
   const data = rows.map((r) => {
     const obj = {}
     columns.forEach((c) => {
-      obj[c] = r[c] ?? ''
+      obj[c] = celdaComoTexto(r[c])
     })
     return obj
   })

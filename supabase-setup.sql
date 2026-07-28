@@ -35,6 +35,7 @@ create table if not exists conteos (
   usuario text,
   tienda text not null,
   codigo text not null,
+  alt_codigos text[] default '{}',
   producto text,
   area text,
   categoria text,

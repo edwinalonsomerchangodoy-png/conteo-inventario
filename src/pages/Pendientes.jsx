@@ -27,7 +27,7 @@ export default function Pendientes({ conteos, tiendaActiva, usuario, onConteoGua
   const guardar = async (fila) => {
     setGuardando(true)
     const cantidadNum = Number(cantidad) || 0
-    const { fila: nuevaFila, coincide, diferencia } = construirFilaReconteo({
+    const { fila: nuevaFila, coincide, diferencia, totalReconteo } = construirFilaReconteo({
       filaExistente: fila,
       usuario,
       cantidad: cantidadNum,
@@ -36,21 +36,15 @@ export default function Pendientes({ conteos, tiendaActiva, usuario, onConteoGua
     try {
       await upsertConteo(nuevaFila)
       setAbierto(null)
-      if (coincide) {
-        setMensaje(
-          diferencia === 0
-            ? { tono: 'ok', texto: `${fila.producto}: confirmado, sin diferencia.`, Icon: CheckCircle2 }
-            : {
-                tono: Math.abs(diferencia) <= 2 ? 'warn' : 'bad',
-                texto: `${fila.producto}: diferencia confirmada (${diferencia > 0 ? '+' : ''}${diferencia}).`,
-                Icon: AlertTriangle,
-              }
-        )
+      if (diferencia === 0) {
+        setMensaje({ tono: 'ok', texto: `${fila.producto}: confirmado, sin diferencia.`, Icon: CheckCircle2 })
       } else {
         setMensaje({
-          tono: 'flag',
-          texto: `${fila.producto}: los dos conteos no coinciden. Quedó marcado para revisión manual.`,
-          Icon: ShieldAlert,
+          tono: Math.abs(diferencia) <= 2 ? 'warn' : 'bad',
+          texto: coincide
+            ? `${fila.producto}: diferencia confirmada (${diferencia > 0 ? '+' : ''}${diferencia}).`
+            : `${fila.producto}: diferencia confirmada (${diferencia > 0 ? '+' : ''}${diferencia}) — el 1º y 2º conteo no coincidieron (1º: ${fila.conteo_1} · 2º: ${totalReconteo}).`,
+          Icon: AlertTriangle,
         })
       }
       onConteoGuardado()

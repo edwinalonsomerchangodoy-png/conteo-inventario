@@ -152,21 +152,16 @@ export default function PhysicalCount({
       fila = resultadoCalculo.fila
       const { coincide, diferencia, totalReconteo } = resultadoCalculo
 
-      if (coincide) {
-        mensaje =
-          diferencia === 0
-            ? { tono: 'ok', texto: 'Reconteo confirma que no hay diferencia', Icon: CheckCircle2 }
-            : {
-                tono: Math.abs(diferencia) <= 2 ? 'warn' : 'bad',
-                texto: 'Diferencia confirmada por reconteo',
-                Icon: Math.abs(diferencia) <= 2 ? AlertTriangle : XCircle,
-                diferencia,
-              }
+      if (diferencia === 0) {
+        mensaje = { tono: 'ok', texto: 'Reconteo confirma que no hay diferencia', Icon: CheckCircle2 }
       } else {
         mensaje = {
-          tono: 'flag',
-          texto: `Los dos conteos no coinciden (1º: ${filaExistente.conteo_1} · 2º: ${totalReconteo}). Revisar manualmente.`,
-          Icon: ShieldAlert,
+          tono: Math.abs(diferencia) <= 2 ? 'warn' : 'bad',
+          texto: coincide
+            ? 'Diferencia confirmada por reconteo'
+            : `Diferencia confirmada por reconteo (1º: ${filaExistente.conteo_1} · 2º: ${totalReconteo}, no coincidieron)`,
+          Icon: Math.abs(diferencia) <= 2 ? AlertTriangle : XCircle,
+          diferencia,
         }
       }
     }

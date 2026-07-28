@@ -9,6 +9,7 @@ const COLUMNAS = [
   'usuario',
   'tienda',
   'codigo',
+  'alt_codigos',
   'producto',
   'area',
   'categoria',
@@ -32,6 +33,8 @@ function badgeInfo(c) {
   const estado = estadoDe(c)
   const dif = Number(c.diferencia)
   const difTexto = dif !== 0 ? ` (${dif > 0 ? '+' : ''}${dif})` : ''
+  const noCoincidieron =
+    c.conteo_1 !== null && c.conteo_1 !== undefined && c.conteo_2 !== null && c.conteo_2 !== undefined && c.conteo_1 !== c.conteo_2
 
   switch (estado) {
     case 'ok':
@@ -39,10 +42,16 @@ function badgeInfo(c) {
     case 'pendiente_reconteo':
       return { tone: 'pending', label: 'Pendiente de reconteo' }
     case 'revisar':
+      // Compatibilidad con conteos guardados antes de este cambio.
       return { tone: 'flag', label: `Revisar (1º:${c.conteo_1} · 2º:${c.conteo_2})` }
     case 'confirmado':
     default:
-      return { tone: Math.abs(dif) <= 2 ? 'warn' : 'bad', label: `Confirmado${difTexto}` }
+      return {
+        tone: Math.abs(dif) <= 2 ? 'warn' : 'bad',
+        label: noCoincidieron
+          ? `Confirmado${difTexto} · 1º:${c.conteo_1}≠2º:${c.conteo_2}`
+          : `Confirmado${difTexto}`,
+      }
   }
 }
 
@@ -180,7 +189,14 @@ export default function Reports({ conteos, onRecargar }) {
                         <td className="px-4 py-3 text-slate-soft whitespace-nowrap">{c.fecha}</td>
                         <td className="px-4 py-3">{c.usuario}</td>
                         <td className="px-4 py-3 text-slate-soft">{c.tienda}</td>
-                        <td className="px-4 py-3 code-tag">{c.codigo}</td>
+                        <td className="px-4 py-3 code-tag">
+                          {c.codigo}
+                          {Array.isArray(c.alt_codigos) && c.alt_codigos.length > 0 && (
+                            <div className="text-[11px] text-slate-soft mt-0.5">
+                              también: {c.alt_codigos.join(', ')}
+                            </div>
+                          )}
+                        </td>
                         <td className="px-4 py-3">{c.producto}</td>
                         <td className="px-4 py-3 text-slate-soft">{c.area}</td>
                         <td className="px-4 py-3 text-slate-soft">{c.categoria}</td>

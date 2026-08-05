@@ -43,7 +43,18 @@ export default function PhysicalCount({
 
   let modo = 'primero'
   if (filaExistente) {
-    modo = filaExistente.estado === 'pendiente_reconteo' ? 'reconteo' : 'cerrado'
+    if (filaExistente.estado === 'pendiente_reconteo') {
+      modo = 'reconteo'
+    } else if (filaExistente.estado === 'ok') {
+      // Un primer conteo que coincidió con el sistema NO se cierra —
+      // puede que sigas escaneando el mismo producto porque hay más
+      // unidades físicas de las que el sistema esperaba (sobrante).
+      modo = 'primero'
+    } else {
+      // Solo se cierra después de un reconteo ya confirmado
+      // ("confirmado" o "revisar").
+      modo = 'cerrado'
+    }
   }
 
   // Cuando hay una lista selectiva activa: productos de esa lista que aún no

@@ -56,6 +56,14 @@ function badgeInfo(c) {
   }
 }
 
+function formatearFecha(valor) {
+  if (!valor) return ''
+  const d = new Date(valor)
+  if (Number.isNaN(d.getTime())) return String(valor)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 export default function Reports({ conteos, onRecargar }) {
   const [borrando, setBorrando] = useState(false)
   const [exportando, setExportando] = useState(false)
@@ -170,6 +178,7 @@ export default function Reports({ conteos, onRecargar }) {
                     <th className="text-left px-4 py-3">Usuario</th>
                     <th className="text-left px-4 py-3">Tienda</th>
                     <th className="text-left px-4 py-3">Código</th>
+                    <th className="text-left px-4 py-3">Códigos alternos</th>
                     <th className="text-left px-4 py-3">Producto</th>
                     <th className="text-left px-4 py-3">Área</th>
                     <th className="text-left px-4 py-3">Categoría</th>
@@ -185,16 +194,14 @@ export default function Reports({ conteos, onRecargar }) {
                     const badge = badgeInfo(c)
                     return (
                       <tr key={i}>
-                        <td className="px-4 py-3 text-slate-soft whitespace-nowrap">{c.fecha}</td>
+                        <td className="px-4 py-3 text-slate-soft whitespace-nowrap">{formatearFecha(c.fecha)}</td>
                         <td className="px-4 py-3">{c.usuario}</td>
                         <td className="px-4 py-3 text-slate-soft">{c.tienda}</td>
-                        <td className="px-4 py-3 code-tag">
-                          {c.codigo}
-                          {Array.isArray(c.alt_codigos) && c.alt_codigos.length > 0 && (
-                            <div className="text-[11px] text-slate-soft mt-0.5">
-                              también: {c.alt_codigos.join(', ')}
-                            </div>
-                          )}
+                        <td className="px-4 py-3 code-tag">{c.codigo}</td>
+                        <td className="px-4 py-3 code-tag text-slate-soft">
+                          {Array.isArray(c.alt_codigos) && c.alt_codigos.length > 0
+                            ? c.alt_codigos.join(', ')
+                            : '—'}
                         </td>
                         <td className="px-4 py-3">{c.producto}</td>
                         <td className="px-4 py-3 text-slate-soft">{c.area}</td>

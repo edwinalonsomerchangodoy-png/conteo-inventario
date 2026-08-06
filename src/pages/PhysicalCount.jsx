@@ -3,7 +3,6 @@ import {
   CheckCircle2,
   XCircle,
   PlusCircle,
-  RotateCcw,
   ShieldAlert,
   Camera,
   ListChecks,
@@ -12,7 +11,7 @@ import {
 import { Card, Eyebrow, Field, inputClass, Badge } from '../components/ui.jsx'
 import CameraScanner from '../components/CameraScanner.jsx'
 import { limpiarCodigo, buscarPorCodigo } from '../lib/storage.js'
-import { upsertConteo, eliminarConteo } from '../lib/db.js'
+import { upsertConteo } from '../lib/db.js'
 import { construirFilaPrimero } from '../lib/conteoLogic.js'
 
 export default function PhysicalCount({
@@ -141,14 +140,6 @@ export default function PhysicalCount({
     onConteoGuardado()
   }
 
-  const reiniciarConteo = async () => {
-    if (!filaExistente) return
-    if (!confirm('¿Borrar el conteo guardado de este producto y empezar de nuevo?')) return
-    await eliminarConteo(filaExistente.codigo, filaExistente.tienda)
-    setResultado(null)
-    onConteoGuardado()
-  }
-
   useEffect(() => {
     if (autoGuardar && producto) {
       setAutoGuardar(false)
@@ -266,6 +257,12 @@ export default function PhysicalCount({
               {producto.area}
             </p>
             <p className="text-lg font-display font-bold">{producto.producto}</p>
+            <p className="text-xs code-tag text-paper/70">
+              {producto.codigo}
+              {Array.isArray(producto.alt_codigos) && producto.alt_codigos.length > 0 && (
+                <> · también: {producto.alt_codigos.join(', ')}</>
+              )}
+            </p>
             <p className="text-sm">
               Stock sistema:{' '}
               <span className="code-tag text-signal font-semibold">{producto.stock_sistema}</span>{' '}
@@ -287,12 +284,6 @@ export default function PhysicalCount({
                   Ya llevas contado: <span className="code-tag">{filaExistente.conteo_fisico}</span>{' '}
                   ({etiquetaEstado(filaExistente.estado)})
                 </p>
-                <button
-                  onClick={reiniciarConteo}
-                  className="text-xs underline text-signal flex items-center gap-1 mt-1"
-                >
-                  <RotateCcw size={12} /> Reiniciar este conteo
-                </button>
               </div>
             )}
 

@@ -1,6 +1,33 @@
 import { useEffect, useRef, useState } from 'react'
 import { BrowserMultiFormatReader } from '@zxing/browser'
+import { DecodeHintType, BarcodeFormat } from '@zxing/library'
 import { X, Camera } from 'lucide-react'
+
+function crearLector() {
+  const hints = new Map()
+  hints.set(DecodeHintType.TRY_HARDER, true)
+  hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+    BarcodeFormat.EAN_13,
+    BarcodeFormat.EAN_8,
+    BarcodeFormat.UPC_A,
+    BarcodeFormat.UPC_E,
+    BarcodeFormat.CODE_128,
+    BarcodeFormat.CODE_39,
+    BarcodeFormat.ITF,
+  ])
+  return new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 150 })
+}
+
+const CONSTRAINTS_PREFERIDAS = {
+  audio: false,
+  video: {
+    facingMode: { ideal: 'environment' },
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+    // Ayuda a enfocar de cerca en celulares que lo soportan.
+    advanced: [{ focusMode: 'continuous' }],
+  },
+}
 
 export default function CameraScanner({ onDetectado, onCerrar }) {
   const videoRef = useRef(null)
@@ -8,26 +35,39 @@ export default function CameraScanner({ onDetectado, onCerrar }) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const lector = new BrowserMultiFormatReader()
+    const lector = crearLector()
     let detectado = false
+    let cancelado = false
 
+    const manejarResultado = (resultado, err, controls) => {
+      controlsRef.current = controls
+      if (resultado && !detectado) {
+        detectado = true
+        controls.stop()
+        onDetectado(resultado.getText())
+      }
+    }
+
+    // Se intenta primero con restricciones específicas (cámara trasera, alta
+    // resolución) para leer mejor códigos pequeños o en ángulo. Si el
+    // navegador no lo soporta, se cae al modo genérico.
     lector
-      .decodeFromVideoDevice(undefined, videoRef.current, (resultado, err, controls) => {
-        controlsRef.current = controls
-        if (resultado && !detectado) {
-          detectado = true
-          controls.stop()
-          onDetectado(resultado.getText())
-        }
-      })
+      .decodeFromConstraints(CONSTRAINTS_PREFERIDAS, videoRef.current, manejarResultado)
       .catch((err) => {
-        console.error(err)
-        setError(
-          'No se pudo acceder a la cámara. Revisa que le hayas dado permiso al navegador para usarla.'
-        )
+        if (cancelado) return
+        console.warn('No se pudo usar la cámara trasera con alta resolución, probando modo genérico', err)
+        lector
+          .decodeFromVideoDevice(undefined, videoRef.current, manejarResultado)
+          .catch((err2) => {
+            console.error(err2)
+            setError(
+              'No se pudo acceder a la cámara. Revisa que le hayas dado permiso al navegador para usarla.'
+            )
+          })
       })
 
     return () => {
+      cancelado = true
       controlsRef.current?.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -53,7 +93,8 @@ export default function CameraScanner({ onDetectado, onCerrar }) {
           <p className="text-bad text-sm mt-3 bg-white rounded-lg p-3">{error}</p>
         ) : (
           <p className="text-paper/60 text-xs mt-3 text-center">
-            Apunta la cámara al código de barras del producto — se detecta solo.
+            Acerca bien el código y mantén el celular firme — se detecta solo. Si no lee, aléjate
+            un poco hasta que el código completo quepa en el recuadro.
           </p>
         )}
 

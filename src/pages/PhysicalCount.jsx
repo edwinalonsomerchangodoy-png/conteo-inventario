@@ -188,7 +188,7 @@ export default function PhysicalCount({
           Contando como: <span className="font-medium text-signal">{usuario}</span>
         </p>
         {programaActivo ? (
-          <p className="text-xs mt-2 bg-brand/10 border border-brand/30 rounded-md px-3 py-2 inline-block">
+          <p className="text-xs mt-2 bg-brand/10 border border-brand/30 rounded-md px-3 py-2 max-w-full break-words">
             Ciclo activo: <span className="font-medium text-brand">{programaActivo.nombre}</span>
             {codigosDelPrograma && ` (${codigosDelPrograma.length} referencias en esta tienda)`}
           </p>

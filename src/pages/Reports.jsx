@@ -4,12 +4,11 @@ import { Card, Eyebrow, Badge } from '../components/ui.jsx'
 import { descargarExcel } from '../lib/storage.js'
 import { borrarTodosLosConteos } from '../lib/db.js'
 
-const COLUMNAS = [
+const COLUMNAS_BASE = [
   'fecha',
   'usuario',
   'tienda',
   'codigo',
-  'alt_codigos',
   'producto',
   'area',
   'categoria',
@@ -79,6 +78,31 @@ export default function Reports({ conteos, onRecargar }) {
     }
   }, [conteos])
 
+  // Cada código alterno recibe su propia columna (en vez de una sola
+  // columna con todos separados por coma) — se calcula cuántas hacen falta
+  // según el producto que más códigos alternos tenga.
+  const maxAltCodigos = useMemo(
+    () => conteos.reduce((max, c) => Math.max(max, Array.isArray(c.alt_codigos) ? c.alt_codigos.length : 0), 0),
+    [conteos]
+  )
+  const columnasAlt = Array.from({ length: maxAltCodigos }, (_, i) => `codigo_alterno_${i + 1}`)
+  const columnasExport = [
+    ...COLUMNAS_BASE.slice(0, 4),
+    ...columnasAlt,
+    ...COLUMNAS_BASE.slice(4),
+  ]
+  const filasExport = useMemo(
+    () =>
+      conteos.map((c) => {
+        const fila = { ...c }
+        columnasAlt.forEach((col, i) => {
+          fila[col] = (c.alt_codigos || [])[i] || ''
+        })
+        return fila
+      }),
+    [conteos, columnasAlt]
+  )
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -103,7 +127,7 @@ export default function Reports({ conteos, onRecargar }) {
               onClick={async () => {
                 setExportando(true)
                 try {
-                  await descargarExcel('reporte_conteos.xlsx', conteos, COLUMNAS, 'Conteos')
+                  await descargarExcel('reporte_conteos.xlsx', filasExport, columnasExport, 'Conteos')
                 } finally {
                   setExportando(false)
                 }
@@ -178,7 +202,11 @@ export default function Reports({ conteos, onRecargar }) {
                     <th className="text-left px-4 py-3">Usuario</th>
                     <th className="text-left px-4 py-3">Tienda</th>
                     <th className="text-left px-4 py-3">Código</th>
-                    <th className="text-left px-4 py-3">Códigos alternos</th>
+                    {columnasAlt.map((_, i) => (
+                      <th key={i} className="text-left px-4 py-3">
+                        Código alterno {i + 1}
+                      </th>
+                    ))}
                     <th className="text-left px-4 py-3">Producto</th>
                     <th className="text-left px-4 py-3">Área</th>
                     <th className="text-left px-4 py-3">Categoría</th>
@@ -198,11 +226,11 @@ export default function Reports({ conteos, onRecargar }) {
                         <td className="px-4 py-3">{c.usuario}</td>
                         <td className="px-4 py-3 text-slate-soft">{c.tienda}</td>
                         <td className="px-4 py-3 code-tag">{c.codigo}</td>
-                        <td className="px-4 py-3 code-tag text-slate-soft">
-                          {Array.isArray(c.alt_codigos) && c.alt_codigos.length > 0
-                            ? c.alt_codigos.join(', ')
-                            : '—'}
-                        </td>
+                        {columnasAlt.map((_, idx) => (
+                          <td key={idx} className="px-4 py-3 code-tag text-slate-soft">
+                            {(c.alt_codigos || [])[idx] || '—'}
+                          </td>
+                        ))}
                         <td className="px-4 py-3">{c.producto}</td>
                         <td className="px-4 py-3 text-slate-soft">{c.area}</td>
                         <td className="px-4 py-3 text-slate-soft">{c.categoria}</td>

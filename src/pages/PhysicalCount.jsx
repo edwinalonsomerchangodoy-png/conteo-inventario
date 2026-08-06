@@ -64,6 +64,15 @@ export default function PhysicalCount({
     )
   }, [conteos, tiendaActiva])
 
+  // Si hay un ciclo activo, solo se permite guardar el conteo de productos
+  // que pertenecen a ese ciclo — para no mezclar referencias de otros
+  // ciclos o proveedores en el avance que se está midiendo.
+  const perteneceAlCiclo =
+    !programaActivo ||
+    !codigosDelPrograma ||
+    codigosDelPrograma.includes(producto?.codigo) ||
+    (producto?.alt_codigos || []).some((c) => codigosDelPrograma.includes(c))
+
   const pendientesPrograma = useMemo(() => {
     if (!codigosDelPrograma) return []
     return codigosDelPrograma
@@ -80,7 +89,7 @@ export default function PhysicalCount({
   }, [codigosDelPrograma, codigosContados, stock])
 
   const guardarConteo = async () => {
-    if (!producto) return
+    if (!producto || !perteneceAlCiclo) return
     setGuardando(true)
     const cantidad = Number(cantidadEscaneo) || 0
 
@@ -141,9 +150,16 @@ export default function PhysicalCount({
   }
 
   useEffect(() => {
-    if (autoGuardar && producto) {
+    if (autoGuardar && producto && perteneceAlCiclo) {
       setAutoGuardar(false)
       guardarConteo()
+    } else if (autoGuardar && producto && !perteneceAlCiclo) {
+      setAutoGuardar(false)
+      setResultado({
+        tono: 'bad',
+        texto: 'Este producto no pertenece al ciclo activo. No se guardó el conteo.',
+        Icon: XCircle,
+      })
     } else if (autoGuardar && !producto && codigoLimpio) {
       setAutoGuardar(false)
       registrarNoEncontrado()
@@ -214,7 +230,7 @@ export default function PhysicalCount({
           <div className={`scan-frame ${focused ? 'is-active' : ''} flex items-stretch gap-2`}>
             <input
               ref={inputCodigoRef}
-              className={`${inputClass} code-tag text-base flex-1`}
+              className={`${inputClass} text-base tracking-wide flex-1`}
               value={codigo}
               onChange={(e) => {
                 setCodigo(e.target.value)
@@ -224,8 +240,14 @@ export default function PhysicalCount({
                 if (e.key !== 'Enter') return
                 e.preventDefault()
                 if (!codigoLimpio) return
-                if (producto) {
+                if (producto && perteneceAlCiclo) {
                   guardarConteo()
+                } else if (producto && !perteneceAlCiclo) {
+                  setResultado({
+                    tono: 'bad',
+                    texto: 'Este producto no pertenece al ciclo activo. No se guardó el conteo.',
+                    Icon: XCircle,
+                  })
                 } else {
                   registrarNoEncontrado()
                 }
@@ -269,14 +291,11 @@ export default function PhysicalCount({
               🔒
             </p>
 
-            {programaActivo &&
-              codigosDelPrograma &&
-              !codigosDelPrograma.includes(producto.codigo) &&
-              !(producto.alt_codigos || []).some((c) => codigosDelPrograma.includes(c)) && (
-                <p className="text-xs text-signal bg-signal/10 border border-signal/30 rounded-md px-2.5 py-1.5 mt-1">
-                  Este producto no pertenece al ciclo activo, pero el conteo se guardará igual.
-                </p>
-              )}
+            {programaActivo && !perteneceAlCiclo && (
+              <p className="text-xs text-bad bg-bad/10 border border-bad/25 rounded-md px-2.5 py-1.5 mt-1">
+                Este producto no pertenece al ciclo activo — no se puede guardar su conteo ahora.
+              </p>
+            )}
 
             {filaExistente && (
               <div className="bg-white/10 rounded-md p-3 mt-2 space-y-1">
@@ -287,32 +306,34 @@ export default function PhysicalCount({
               </div>
             )}
 
-            <div className="pt-3">
-              <Field label="Unidades a sumar en este escaneo">
-                <input
-                  type="number"
-                  min={0}
-                  step={1}
-                  className={`${inputClass} bg-white`}
-                  value={cantidadEscaneo}
-                  onChange={(e) => setCantidadEscaneo(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      guardarConteo()
-                    }
-                  }}
-                />
-              </Field>
-              <button
-                onClick={guardarConteo}
-                disabled={guardando}
-                className="mt-3 w-full flex items-center justify-center gap-2 bg-signal text-ink font-semibold py-2.5 rounded-lg text-sm hover:bg-signal-dim transition-colors disabled:opacity-50"
-              >
-                <PlusCircle size={16} />
-                {guardando ? 'Guardando...' : 'Guardar conteo'}
-              </button>
-            </div>
+            {perteneceAlCiclo && (
+              <div className="pt-3">
+                <Field label="Unidades a sumar en este escaneo">
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    className={`${inputClass} bg-white`}
+                    value={cantidadEscaneo}
+                    onChange={(e) => setCantidadEscaneo(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        guardarConteo()
+                      }
+                    }}
+                  />
+                </Field>
+                <button
+                  onClick={guardarConteo}
+                  disabled={guardando}
+                  className="mt-3 w-full flex items-center justify-center gap-2 bg-signal text-ink font-semibold py-2.5 rounded-lg text-sm hover:bg-signal-dim transition-colors disabled:opacity-50"
+                >
+                  <PlusCircle size={16} />
+                  {guardando ? 'Guardando...' : 'Guardar conteo'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 

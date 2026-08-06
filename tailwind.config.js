@@ -30,20 +30,12 @@ export default {
         },
       },
       fontFamily: {
-        display: ['"Archivo Expanded"', '"Archivo"', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Inter"', 'sans-serif'],
         body: ['"Inter"', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'monospace'],
       },
-      keyframes: {
-        scan: {
-          '0%': { transform: 'translateY(0%)', opacity: '0.9' },
-          '50%': { opacity: '0.4' },
-          '100%': { transform: 'translateY(2400%)', opacity: '0.9' },
-        },
-      },
-      animation: {
-        scan: 'scan 1.8s ease-in-out infinite',
-      },
+      keyframes: {},
+      animation: {},
     },
   },
   plugins: [],

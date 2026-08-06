@@ -139,6 +139,9 @@ export default function Sidebar({ activo, onCambiar, tiendaActiva, usuario, esAd
                 </button>
               </div>
             )}
+            <p className="text-center text-[10px] text-slate-soft/70 py-2 border-t border-ink-line/60">
+              Creado por Edwin Merchán · 2026
+            </p>
           </div>
           <div className="flex-1 bg-black/40" onClick={() => setAbiertaMovil(false)} />
         </div>
@@ -206,6 +209,12 @@ export default function Sidebar({ activo, onCambiar, tiendaActiva, usuario, esAd
               <LogOut size={17} />
             </button>
           </div>
+        )}
+
+        {!colapsada && (
+          <p className="text-center text-[10px] text-slate-soft/70 py-2 border-t border-ink-line/60">
+            Creado por Edwin Merchán · 2026
+          </p>
         )}
       </aside>
     </>

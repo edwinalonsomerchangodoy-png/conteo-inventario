@@ -30,48 +30,16 @@ body {
   outline-offset: 2px;
 }
 
-/* Scanner input signature element */
+/* Campo de escaneo: un resalte suave al enfocar, sin líneas animadas */
 .scan-frame {
   position: relative;
-  overflow: hidden;
   border-radius: 10px;
+  transition: box-shadow 0.2s ease;
 }
 
-.scan-frame::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #D9A544, transparent);
-  top: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.scan-frame.is-active::before {
-  opacity: 1;
-  animation: scanline 1.6s ease-in-out infinite;
-}
-
-@keyframes scanline {
-  0% {
-    top: 6%;
-  }
-  50% {
-    top: 90%;
-  }
-  100% {
-    top: 6%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scan-frame.is-active::before {
-    animation: none;
-    opacity: 0.6;
-    top: 50%;
-  }
+.scan-frame.is-active {
+  box-shadow: 0 0 0 3px rgba(0, 149, 62, 0.15);
+  border-radius: 10px;
 }
 
 .code-tag {

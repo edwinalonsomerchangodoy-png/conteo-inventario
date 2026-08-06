@@ -22,7 +22,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-paper px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-paper px-4">
       <Card className="w-full max-w-sm p-8 space-y-6">
         <img src={logo} alt="Locatel" className="h-10 w-auto rounded-md" />
 
@@ -67,6 +67,7 @@ export default function Login() {
           </button>
         </form>
       </Card>
+      <p className="text-center text-[11px] text-slate-soft mt-5">Creado por Edwin Merchán · 2026</p>
     </div>
   )
 }

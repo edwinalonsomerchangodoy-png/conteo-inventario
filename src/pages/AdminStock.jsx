@@ -87,7 +87,7 @@ export default function AdminStock({ stock, tiendaActiva, cargando, onRecargar }
             <Field label="Código del producto (escáner)">
               <div className={`scan-frame ${focused ? 'is-active' : ''} flex items-stretch gap-2`}>
                 <input
-                  className={`${inputClass} code-tag flex-1`}
+                  className={`${inputClass} tracking-wide flex-1`}
                   value={codigo}
                   onChange={(e) => setCodigo(e.target.value)}
                   onFocus={() => setFocused(true)}

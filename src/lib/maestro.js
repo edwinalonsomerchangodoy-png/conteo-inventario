@@ -88,7 +88,7 @@ export function extraerStockDeTienda(maestro, nombreTienda) {
         proveedor: maestro.idxProveedor !== -1 ? r[maestro.idxProveedor] ?? '' : '',
         marca: maestro.idxMarca !== -1 ? r[maestro.idxMarca] ?? '' : '',
         tienda: nombreTienda,
-        stock_sistema: Number(r[tienda.col]) || 0,
+        stock_sistema: Math.round(Number(r[tienda.col]) || 0),
       }
     })
     .filter((f) => f.codigo)

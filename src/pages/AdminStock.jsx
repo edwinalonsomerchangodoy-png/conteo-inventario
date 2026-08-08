@@ -44,7 +44,7 @@ export default function AdminStock({ stock, tiendaActiva, cargando, onRecargar }
         proveedor,
         marca,
         tienda: tiendaActiva,
-        stock_sistema: Number(cantidad) || 0,
+        stock_sistema: Math.round(Number(cantidad) || 0),
       })
       setMensaje(`Stock guardado para ${codigoLimpio}`)
       setCodigo('')

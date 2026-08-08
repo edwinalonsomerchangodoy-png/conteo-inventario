@@ -47,7 +47,7 @@ export default function ExcelUpload({ tiendaActiva, onCambiarTienda, onCargado, 
         producto: entrada.producto,
         area: entrada.area,
         tienda: tiendaSeleccion,
-        stock_sistema: Number(entrada.stock_sistema) || 0,
+        stock_sistema: Math.round(Number(entrada.stock_sistema) || 0),
       }
     })
 
